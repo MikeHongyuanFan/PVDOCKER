@@ -1,0 +1,14 @@
+{
+  "name": "crm-loan-management-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for CRM Loan Management System",
+  "main": "test-fetch.js",
+  "type": "module",
+  "scripts": {
+    "test": "node test-fetch.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "superagent": "^8.0.9"
+  }
+}

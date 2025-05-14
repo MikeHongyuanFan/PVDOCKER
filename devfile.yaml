@@ -1,0 +1,42 @@
+schemaVersion: 2.0.0
+metadata:
+  name: crm-loan-application
+  version: 1.0.0
+  displayName: CRM Loan Application
+  description: Full-stack application with Django backend and Vue.js frontend
+components:
+  - name: dev
+    container:
+      image: public.ecr.aws/aws-mde/universal-image:latest
+      memoryLimit: 4Gi
+      mountSources: true
+      env:
+        - name: DEBUG
+          value: "1"
+        - name: DATABASE_URL
+          value: "postgres://postgres:postgres@localhost:5432/crm_loan_db"
+        - name: CELERY_BROKER_URL
+          value: "redis://localhost:6379/0"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: VITE_API_URL
+          value: "http://localhost:8000/api"
+commands:
+  - id: install
+    exec:
+      component: dev
+      commandLine: "sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info && cd backenddjango && pip install -r requirements.txt && cd ../frontendVUE && npm install"
+      workingDir: ${PROJECT_SOURCE}
+  - id: build
+    exec:
+      component: dev
+      commandLine: "cd backenddjango && python manage.py collectstatic --noinput && python manage.py migrate --noinput && cd ../frontendVUE && npm run build"
+      workingDir: ${PROJECT_SOURCE}
+  - id: test
+    exec:
+      component: dev
+      commandLine: "cd backenddjango && python manage.py test && cd ../frontendVUE && npm run test"
+      workingDir: ${PROJECT_SOURCE}
+
+
+

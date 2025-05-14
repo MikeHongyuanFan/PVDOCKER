@@ -1,0 +1,60 @@
+services:
+  backend:
+    build: ./backenddjango
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backenddjango:/app
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/crm_loan_db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - PYTHONUNBUFFERED=1
+
+  frontend:
+    build: ./frontendVUE
+    volumes:
+      - ./frontendVUE:/app
+      - /app/node_modules
+    ports:
+      - "3001:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8001/api
+    command: npm run dev -- --host 0.0.0.0 --port 3000
+
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=crm_loan_db
+    ports:
+      - "5433:5432"
+
+  redis:
+    image: redis:6
+    ports:
+      - "6380:6379"
+
+  celery:
+    build: ./backenddjango
+    command: celery -A crm_backend worker -l info
+    volumes:
+      - ./backenddjango:/app
+    depends_on:
+      - backend
+      - redis
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/crm_loan_db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - PYTHONUNBUFFERED=1
+
+volumes:
+  postgres_data:

@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env.prod
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_NAME}
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - crm_network
+
+  redis:
+    image: redis:7
+    volumes:
+      - redis_data:/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - crm_network
+
+  web:
+    build: .
+    restart: always
+    env_file:
+      - ./.env.prod
+    environment:
+      - DJANGO_SETTINGS_MODULE=crm_backend.settings_production
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - crm_network
+
+  celery:
+    build: .
+    command: celery -A crm_backend worker -l INFO
+    restart: always
+    env_file:
+      - ./.env.prod
+    environment:
+      - DJANGO_SETTINGS_MODULE=crm_backend.settings_production
+    volumes:
+      - media_volume:/app/media
+    depends_on:
+      - web
+      - redis
+    networks:
+      - crm_network
+
+  celery-beat:
+    build: .
+    command: celery -A crm_backend beat -l INFO
+    restart: always
+    env_file:
+      - ./.env.prod
+    environment:
+      - DJANGO_SETTINGS_MODULE=crm_backend.settings_production
+    depends_on:
+      - web
+      - redis
+      - celery
+    networks:
+      - crm_network
+
+  nginx:
+    image: nginx:1.23
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - static_volume:/var/www/static
+      - media_volume:/var/www/media
+    depends_on:
+      - web
+    restart: always
+    networks:
+      - crm_network
+    environment:
+      - SERVER_NAME=${SERVER_NAME}
+    command: /bin/bash -c "envsubst '$$SERVER_NAME' < /etc/nginx/conf.d/app.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+
+networks:
+  crm_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
