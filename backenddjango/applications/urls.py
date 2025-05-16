@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views.application_views import ApplicationViewSet
 from .views.pdf_generation import GenerateFilledFormView
+from .views.funding_calculator_views import ManualFundingCalculationView
 
 # Create a router for ViewSets
 router = DefaultRouter()
@@ -43,4 +44,7 @@ urlpatterns = [
     
     # Generate filled PDF form
     path('<int:application_id>/generate-pdf/', GenerateFilledFormView.as_view(), name='application-generate-pdf'),
+    
+    # Manual funding calculator
+    path('manual-funding-calculator/', ManualFundingCalculationView.as_view(), name='manual-funding-calculator'),
 ]

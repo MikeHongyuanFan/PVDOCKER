@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Your Weekly Digest</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #006633;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .notification-group {
+            margin-bottom: 30px;
+        }
+        .notification-group-title {
+            font-weight: bold;
+            font-size: 1.2em;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .notification {
+            border-left: 4px solid #006633;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .notification-time {
+            color: #666;
+            font-size: 0.8em;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8em;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #006633;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .summary {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Your Weekly Digest</h1>
+        <p>{{ start_date }} to {{ end_date }}</p>
+    </div>
+    
+    <div class="content">
+        <p>Hello {{ user.first_name|default:user.email }},</p>
+        
+        <div class="summary">
+            <p>Here's a summary of your activity from the past week:</p>
+            <ul>
+                <li><strong>{{ notification_count }}</strong> unread notification{{ notification_count|pluralize }}</li>
+                <li><strong>{{ notification_groups|length }}</strong> different notification type{{ notification_groups|length|pluralize }}</li>
+            </ul>
+        </div>
+        
+        {% if notification_groups %}
+            <h2>Your Weekly Activity</h2>
+            
+            {% for type, notifications in notification_groups.items %}
+                <div class="notification-group">
+                    <div class="notification-group-title">
+                        {% if type == 'application_status' %}
+                            Application Status Updates
+                        {% elif type == 'repayment_upcoming' %}
+                            Upcoming Repayments
+                        {% elif type == 'repayment_overdue' %}
+                            Overdue Repayments
+                        {% elif type == 'note_reminder' %}
+                            Note Reminders
+                        {% elif type == 'document_uploaded' %}
+                            Document Updates
+                        {% elif type == 'signature_required' %}
+                            Signature Requests
+                        {% elif type == 'system' %}
+                            System Notifications
+                        {% else %}
+                            {{ type|title }} Notifications
+                        {% endif %}
+                        ({{ notifications|length }})
+                    </div>
+                    
+                    {% for notification in notifications %}
+                        <div class="notification">
+                            <div class="notification-title">{{ notification.title }}</div>
+                            <div>{{ notification.message }}</div>
+                            <div class="notification-time">{{ notification.created_at|date:"F j, Y, g:i a" }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            
+            <a href="http://localhost:3000/notifications" class="cta-button">View All Notifications</a>
+        {% else %}
+            <p>You have no new notifications this week.</p>
+        {% endif %}
+        
+        <p>Thank you for using our CRM Loan Management System!</p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated message. Please do not reply to this email.</p>
+        <p>To manage your notification preferences, <a href="http://localhost:3000/settings/notifications">click here</a>.</p>
+    </div>
+</body>
+</html>

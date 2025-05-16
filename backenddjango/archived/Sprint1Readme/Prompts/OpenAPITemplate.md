@@ -1,156 +1,127 @@
 
-Based on my investigation of the project files, I can 
-provide you with a comprehensive guide on how to deploy 
-the CRM Loan Management System to an EC2 instance. Here's 
-a step-by-step process:
+You are a senior Django backend engineer.
 
-## Deploying to EC2 (Development Environment without HTTPS
-)
+**Context:**
+I have an existing email service implemented in `users/services.py` using `send_mail`, which:
+- Sends plain text emails directly
+- Is called from the notification system based on user preferences
+- Has password reset handling
+- Uses environment variables in `settings_docker.py` for config
 
-### Step 1: Launch an EC2 Instance
-1. Launch an Amazon EC2 instance (Amazon Linux 2 or Ubuntu
-)
-2. Configure the security group to allow:
-   • TCP port 80 (HTTP)
-   • TCP port 443 (HTTPS - for future use)
-   • TCP port 22 (SSH)
+**Requirements:**
+Refactor and enhance the email system with the following features:
 
-### Step 2: Connect to Your EC2 Instance
-bash
-ssh -i your-key.pem ec2-user@your-ec2-public-ip
+---
 
+### 1. ✅ **Asynchronous Email Sending**
+- Replace direct `send_mail` calls with a Celery task
+- Create a task `send_email_async` that accepts subject, message, recipients, etc.
+- Use `.delay()` in service functions
+- Place tasks in `crm_backend/tasks.py`
 
-### Step 3: Run the Setup Script
-1. Copy the setup script to your EC2 instance:
-bash
-scp -i your-key.pem /Users/hongyuanfan/Downloads/lianV3-501a294797023b7f3fa802ddb963f1a4b1577785/backenddjango/scripts/setup_ec2_dev.sh ec2-user@your-ec2-public-ip:~
+---
 
+### 2. ✅ **HTML Email Support**
+- Modify `send_email_notification` to accept a `template_name` and `context`
+- Use `render_to_string` for HTML emails
+- Fallback to plain text via `strip_tags`
 
-2. Make the script executable and run it:
-bash
-chmod +x setup_ec2_dev.sh
-./setup_ec2_dev.sh
+---
 
+### 3. ✅ **Email Digest Functionality**
+- Use fields from `NotificationPreference`: `daily_digest`, `weekly_digest`
+- Create two Celery periodic tasks:
+  - `send_daily_digest`
+  - `send_weekly_digest`
+- Aggregate user notifications into email digests (24h for daily, 7d for weekly)
+- Use email templates: `emails/daily_digest.html`, etc.
 
-3. Log out and log back in for Docker group changes to 
-take effect:
-bash
-exit
-ssh -i your-key.pem ec2-user@your-ec2-public-ip
+---
 
+### 4. ✅ **Email Log Tracking**
+- Create model `EmailLog`:
+  ```python
+  class EmailLog(models.Model):
+      user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+      subject = models.CharField(max_length=255)
+      sent_at = models.DateTimeField(auto_now_add=True)
+      status = models.CharField(max_length=20, choices=[
+          ('sent', 'Sent'),
+          ('delivered', 'Delivered'),
+          ('opened', 'Opened'),
+          ('clicked', 'Clicked'),
+          ('bounced', 'Bounced'),
+          ('failed', 'Failed')
+      ], default='sent')
+      notification = models.ForeignKey('users.Notification', on_delete=models.SET_NULL, null=True, blank=True)
+      message_body = models.TextField(null=True, blank=True)
+      email_type = models.CharField(max_length=100, null=True, blank=True)
+````
 
-### Step 4: Copy Project Files to EC2
-1. Create the project directory:
-bash
-mkdir -p ~/crm-backend
+* Log entries in both `send_email_notification` and digest tasks.
 
+---
 
-2. Copy the project files to your EC2 instance:
-bash
-scp -i your-key.pem -r /Users/hongyuanfan/Downloads/lianV3-501a294797023b7f3fa802ddb963f1a4b1577785/backenddjango/* ec2-user@your-ec2-public-ip:~/crm-backend/
+### 5. ✅ **Error Handling & Retry**
 
+* Use Celery retry logic:
 
-### Step 5: Create Environment File
-1. Create a .env file in the project root:
-bash
-cd ~/crm-backend
-nano .env
+  ```python
+  @shared_task(bind=True, max_retries=3)
+  def send_email_with_retry(self, ...):
+      ...
+      raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
+  ```
 
+---
 
-2. Add the following content (adjust values as needed):
-# Database settings
-DB_NAME=crm_db
-DB_USER=crm_user
-DB_PASSWORD=your_secure_password
-DB_HOST=db
+### 6. ✅ **Email Testing Mode**
 
-# Redis settings
-REDIS_HOST=redis
-REDIS_PORT=6379
+* In dev, capture all emails to a test inbox or local console backend.
+* Add `EMAIL_TEST_MODE = True` in dev settings.
+* If test mode is enabled, override recipient to a test email (e.g., [test@example.com](mailto:test@example.com)).
+* Implement a `preview_email(template_name, context)` dev-only view to render test emails in the browser.
 
-# Email settings
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your_email@example.com
-EMAIL_HOST_PASSWORD=your_email_password
-EMAIL_USE_TLS=True
-DEFAULT_FROM_EMAIL=your_email@example.com
+---
 
-# Server settings
-SERVER_NAME=your-ec2-public-ip
+### 7. ✅ **Testing Requirements**
 
+Write tests using `pytest` or Django `TestCase` for:
 
-### Step 6: Create Required Directories
-bash
-mkdir -p ~/crm-backend/nginx/conf.d
-mkdir -p ~/crm-backend/logs
+* Email sending via Celery
+* HTML rendering logic
+* Digest task content generation
+* EmailLog creation
+* Retry mechanism
+* Handling missing email addresses
 
+Use mocks to avoid sending real emails in unit tests.
 
-### Step 7: Deploy the Application
-1. Make the deployment script executable:
-bash
-chmod +x ~/crm-backend/scripts/deploy_ec2_dev.sh
+---
 
+### 8. ✅ **Email Log Export as DOCX**
 
-2. Run the deployment script:
-bash
-cd ~/crm-backend
-./scripts/deploy_ec2_dev.sh
+* Create a service function `export_email_logs_to_docx(log_ids: list[int]) -> BytesIO` using `python-docx`
+* For each `EmailLog` entry, include:
 
+  * Subject
+  * Recipient (user.email)
+  * Sent timestamp
+  * Status
+  * Email type (if any)
+  * Message body (if stored)
+* Add proper headings, separators, and formatting
+* Create a view (e.g., `download_email_logs`) that:
 
-This script will:
-• Build and start the Docker containers
-• Apply database migrations
-• Collect static files
+  * Accepts `GET` query param `?ids=1&ids=2&...`
+  * Returns a `.docx` file using `FileResponse`
+  * Sets content type to `application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+* Use `select_related` for performance
 
-### Step 8: Access the Application
-Your application will be available at:
-http://your-ec2-public-ip/
+Ensure security (only admins or staff users can access this endpoint if exposed).
 
+---
 
-Admin interface:
-http://your-ec2-public-ip/admin/
+Please implement the above in a modular, maintainable, and production-ready way. Use logging, error handling, and docstrings throughout.
 
-
-## Troubleshooting
-
-### Check container logs
-bash
-docker-compose -f docker-compose.ec2-dev.yml logs -f
-
-
-### Check specific service logs
-bash
-docker-compose -f docker-compose.ec2-dev.yml logs web
-docker-compose -f docker-compose.ec2-dev.yml logs nginx
-
-
-### Check Nginx configuration
-bash
-docker-compose -f docker-compose.ec2-dev.yml exec nginx nginx -t
-
-
-### Restart services
-bash
-docker-compose -f docker-compose.ec2-dev.yml restart
-
-
-### Rebuild and restart
-bash
-docker-compose -f docker-compose.ec2-dev.yml up -d --build
-
-
-## Important Notes
-• This deployment is configured for development/testing 
-purposes only
-• HTTP traffic is allowed without HTTPS redirection
-• No SSL certificate is required
-• Django's security settings are configured to allow HTTP 
-traffic
-• Do NOT use this configuration for production 
-environments
-
-The deployment uses the settings_ec2.py configuration 
-which disables HTTPS enforcement and sets ALLOWED_HOSTS to
-accept connections from any host, making it suitable for 
-development and testing but not for production use.
+```

@@ -1,23 +1,27 @@
 from rest_framework import viewsets, status, filters, views
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView, ListAPIView, GenericAPIView
-from .models import User, Notification, NotificationPreference
+from .models import User, Notification, NotificationPreference, EmailLog
 from .serializers import (
     UserSerializer, UserCreateSerializer, NotificationSerializer, 
     NotificationListSerializer, NotificationPreferenceSerializer,
     UserLoginSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
-    LogoutSerializer
+    LogoutSerializer, EmailLogSerializer, EmailPreviewSerializer, DownloadEmailLogsSerializer
 )
 from .permissions import IsAdmin, IsSelfOrAdmin
 from .services import get_or_create_notification_preferences
 from django.contrib.auth import authenticate
 import logging
+from django.http import HttpResponse
+from django.utils import timezone
+from django.conf import settings
+from datetime import timedelta
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -473,3 +477,84 @@ class PasswordResetConfirmView(APIView):
                 return Response({"error": "Failed to reset password."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class EmailPreviewView(APIView):
+    """
+    View for previewing email templates in development mode.
+    Only available when DEBUG=True.
+    """
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = EmailPreviewSerializer
+    
+    def get(self, request):
+        if not settings.DEBUG:
+            return Response(
+                {"detail": "Email preview is only available in development mode"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        template_name = request.query_params.get('template')
+        if not template_name:
+            return Response(
+                {"detail": "Template name is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Basic context for testing
+        context = {
+            'user': request.user,
+            'notifications': Notification.objects.filter(user=request.user)[:5],
+            'notification_count': 5,
+            'date': timezone.now().strftime('%Y-%m-%d'),
+            'start_date': (timezone.now() - timedelta(days=7)).strftime('%Y-%m-%d'),
+            'end_date': timezone.now().strftime('%Y-%m-%d')
+        }
+        
+        try:
+            from users.services import preview_email
+            html_content = preview_email(template_name, context)
+            return HttpResponse(html_content)
+        except Exception as e:
+            return Response(
+                {"detail": f"Error rendering template: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class DownloadEmailLogsView(APIView):
+    """
+    View for downloading email logs as a DOCX file.
+    Only available to admin users.
+    """
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = DownloadEmailLogsSerializer
+    
+    def get(self, request):
+        from crm_backend.tasks import export_email_logs_to_docx
+        
+        # Get log IDs from query params
+        log_ids = request.query_params.getlist('ids')
+        if not log_ids:
+            return Response(
+                {"detail": "No email logs selected for export"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Convert string IDs to integers
+        try:
+            log_ids = [int(log_id) for log_id in log_ids]
+        except ValueError:
+            return Response(
+                {"detail": "Invalid log ID format"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Generate DOCX file
+        output = export_email_logs_to_docx(log_ids)
+        
+        # Create response with the DOCX file
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+        response['Content-Disposition'] = 'attachment; filename="email_logs_export.docx"'
+        return response

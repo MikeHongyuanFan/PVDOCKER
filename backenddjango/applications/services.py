@@ -659,3 +659,75 @@ def process_signature_data(application_id, signature_data, signed_by, user):
         return application
     except Application.DoesNotExist:
         raise ValueError(f"Application with ID {application_id} not found")
+def calculate_funding_manual(loan_amount, interest_rate, security_value, calculation_input):
+    """
+    Calculate funding based on manually provided parameters
+    
+    Args:
+        loan_amount: Loan amount
+        interest_rate: Interest rate
+        security_value: Security value
+        calculation_input: Dictionary containing calculation input parameters
+        
+    Returns:
+        Dictionary with calculation results
+    """
+    from decimal import Decimal
+    
+    # Convert inputs to Decimal for accurate calculations
+    loan_amount = Decimal(str(loan_amount))
+    interest_rate = Decimal(str(interest_rate))
+    security_value = Decimal(str(security_value))
+    
+    # Extract values from calculation input
+    establishment_fee_rate = Decimal(str(calculation_input.get('establishment_fee_rate', 0)))
+    capped_interest_months = int(calculation_input.get('capped_interest_months', 9))
+    monthly_line_fee_rate = Decimal(str(calculation_input.get('monthly_line_fee_rate', 0)))
+    brokerage_fee_rate = Decimal(str(calculation_input.get('brokerage_fee_rate', 0)))
+    application_fee = Decimal(str(calculation_input.get('application_fee', 0)))
+    due_diligence_fee = Decimal(str(calculation_input.get('due_diligence_fee', 0)))
+    legal_fee_before_gst = Decimal(str(calculation_input.get('legal_fee_before_gst', 0)))
+    valuation_fee = Decimal(str(calculation_input.get('valuation_fee', 0)))
+    monthly_account_fee = Decimal(str(calculation_input.get('monthly_account_fee', 0)))
+    working_fee = Decimal(str(calculation_input.get('working_fee', 0)))
+    
+    # Calculate fees
+    establishment_fee = loan_amount * (establishment_fee_rate / 100) * Decimal('1.1')  # With GST
+    capped_interest = loan_amount * (interest_rate / 12 / 100) * capped_interest_months
+    line_fee = loan_amount * (monthly_line_fee_rate / 100) * 14
+    brokerage_fee = loan_amount * (brokerage_fee_rate / 100) * Decimal('1.1')  # With GST
+    legal_fee = legal_fee_before_gst * Decimal('1.1')  # With GST
+    
+    # Calculate total fees and funds available
+    total_fees = (
+        establishment_fee + 
+        capped_interest + 
+        line_fee + 
+        brokerage_fee + 
+        legal_fee + 
+        application_fee + 
+        due_diligence_fee + 
+        valuation_fee + 
+        monthly_account_fee + 
+        working_fee
+    )
+    
+    funds_available = security_value - total_fees
+    
+    # Prepare calculation result
+    calculation_result = {
+        'establishment_fee': float(establishment_fee.quantize(Decimal('0.01'))),
+        'capped_interest': float(capped_interest.quantize(Decimal('0.01'))),
+        'line_fee': float(line_fee.quantize(Decimal('0.01'))),
+        'brokerage_fee': float(brokerage_fee.quantize(Decimal('0.01'))),
+        'legal_fee': float(legal_fee.quantize(Decimal('0.01'))),
+        'application_fee': float(application_fee.quantize(Decimal('0.01'))),
+        'due_diligence_fee': float(due_diligence_fee.quantize(Decimal('0.01'))),
+        'valuation_fee': float(valuation_fee.quantize(Decimal('0.01'))),
+        'monthly_account_fee': float(monthly_account_fee.quantize(Decimal('0.01'))),
+        'working_fee': float(working_fee.quantize(Decimal('0.01'))),
+        'total_fees': float(total_fees.quantize(Decimal('0.01'))),
+        'funds_available': float(funds_available.quantize(Decimal('0.01')))
+    }
+    
+    return calculation_result

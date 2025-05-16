@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.routers import DefaultRouter
 from . import views
-
+from .views import EmailPreviewView, DownloadEmailLogsView
 # Create a router for ViewSets
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet, basename='user')
@@ -31,4 +31,9 @@ urlpatterns = [
     
     # Include router URLs
     path('', include(router.urls)),
+]
+# Email preview and download routes
+urlpatterns += [
+    path('email-preview/', EmailPreviewView.as_view(), name='email-preview'),
+    path('download-email-logs/', DownloadEmailLogsView.as_view(), name='download-email-logs'),
 ]

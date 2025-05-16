@@ -73,6 +73,36 @@ class Notification(models.Model):
         self.save()
 
 
+class EmailLog(models.Model):
+    """
+    Model for tracking email sending history
+    """
+    STATUS_CHOICES = [
+        ('sent', 'Sent'),
+        ('delivered', 'Delivered'),
+        ('opened', 'Opened'),
+        ('clicked', 'Clicked'),
+        ('bounced', 'Bounced'),
+        ('failed', 'Failed')
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_logs')
+    subject = models.CharField(max_length=255)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='sent')
+    notification = models.ForeignKey(Notification, on_delete=models.SET_NULL, null=True, blank=True)
+    message_body = models.TextField(null=True, blank=True)
+    email_type = models.CharField(max_length=100, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-sent_at']
+        verbose_name = 'Email Log'
+        verbose_name_plural = 'Email Logs'
+    
+    def __str__(self):
+        return f"Email to {self.user.email}: {self.subject} ({self.status})"
+
+
 class NotificationPreference(models.Model):
     """
     Model for user notification preferences

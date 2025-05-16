@@ -737,6 +737,68 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApplicationList'
           description: ''
+  /api/applications/manual-funding-calculator/:
+    post:
+      operationId: applications_manual_funding_calculator_create
+      description: Calculate funding based on manually provided parameters
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManualFundingCalculation'
+            examples:
+              ExampleRequest:
+                value:
+                  loan_amount: 500000
+                  interest_rate: 5.5
+                  security_value: 750000
+                  establishment_fee_rate: 2.5
+                  capped_interest_months: 9
+                  monthly_line_fee_rate: 0.25
+                  brokerage_fee_rate: 1.0
+                  application_fee: 500
+                  due_diligence_fee: 1000
+                  legal_fee_before_gst: 2000
+                  valuation_fee: 800
+                  monthly_account_fee: 50
+                  working_fee: 0
+                summary: Example Request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ManualFundingCalculation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ManualFundingCalculation'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                ExampleRequest:
+                  value:
+                    loan_amount: 500000
+                    interest_rate: 5.5
+                    security_value: 750000
+                    establishment_fee_rate: 2.5
+                    capped_interest_months: 9
+                    monthly_line_fee_rate: 0.25
+                    brokerage_fee_rate: 1.0
+                    application_fee: 500
+                    due_diligence_fee: 1000
+                    legal_fee_before_gst: 2000
+                    valuation_fee: 800
+                    monthly_account_fee: 50
+                    working_fee: 0
+                  summary: Example Request
+          description: ''
   /api/applications/validate-schema/:
     post:
       operationId: applications_validate_schema_create
@@ -3626,6 +3688,40 @@ paths:
                   detail:
                     type: string
           description: ''
+  /api/users/download-email-logs/:
+    get:
+      operationId: users_download_email_logs_retrieve
+      description: |-
+        View for downloading email logs as a DOCX file.
+        Only available to admin users.
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadEmailLogs'
+          description: ''
+  /api/users/email-preview/:
+    get:
+      operationId: users_email_preview_retrieve
+      description: |-
+        View for previewing email templates in development mode.
+        Only available when DEBUG=True.
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailPreview'
+          description: ''
   /api/users/notification-preferences/:
     get:
       operationId: users_notification_preferences_retrieve
@@ -4166,8 +4262,6 @@ components:
           nullable: true
         loan_term:
           type: integer
-          maximum: 2147483647
-          minimum: 0
           nullable: true
           description: Loan term in months
         interest_rate:
@@ -4335,8 +4429,6 @@ components:
           nullable: true
         loan_term:
           type: integer
-          maximum: 2147483647
-          minimum: 0
           nullable: true
           description: Loan term in months
         interest_rate:
@@ -5042,8 +5134,6 @@ components:
           maxLength: 100
         employment_duration:
           type: integer
-          maximum: 2147483647
-          minimum: 0
           nullable: true
           description: Duration in months
         annual_income:
@@ -5711,6 +5801,26 @@ components:
         * `tax_return` - Tax Return
         * `contract` - Contract
         * `other` - Other
+    DownloadEmailLogs:
+      type: object
+      description: Serializer for downloading email logs endpoint
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+          description: List of email log IDs to export
+      required:
+      - ids
+    EmailPreview:
+      type: object
+      description: Serializer for email preview endpoint
+      properties:
+        template:
+          type: string
+          description: Template name to preview
+      required:
+      - template
     EmploymentTypeEnum:
       enum:
       - full_time
@@ -6273,6 +6383,75 @@ components:
           description: Refresh token to blacklist
       required:
       - refresh
+    ManualFundingCalculation:
+      type: object
+      description: Serializer for manual funding calculation with application parameters
+      properties:
+        loan_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        interest_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        security_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        establishment_fee_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        capped_interest_months:
+          type: integer
+          minimum: 1
+          default: 9
+        monthly_line_fee_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        brokerage_fee_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        application_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        due_diligence_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        legal_fee_before_gst:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        valuation_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        monthly_account_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        working_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          default: '0.00'
+      required:
+      - application_fee
+      - brokerage_fee_rate
+      - due_diligence_fee
+      - establishment_fee_rate
+      - interest_rate
+      - legal_fee_before_gst
+      - loan_amount
+      - monthly_account_fee
+      - monthly_line_fee_rate
+      - security_value
+      - valuation_fee
     MaritalStatusEnum:
       enum:
       - single
@@ -6395,8 +6574,6 @@ components:
           $ref: '#/components/schemas/NotificationTypeEnum'
         related_object_id:
           type: integer
-          maximum: 2147483647
-          minimum: -2147483648
           nullable: true
         related_object_type:
           type: string
@@ -7051,8 +7228,6 @@ components:
           maxLength: 100
         employment_duration:
           type: integer
-          maximum: 2147483647
-          minimum: 0
           nullable: true
           description: Duration in months
         annual_income:
@@ -8015,18 +8190,12 @@ components:
           - $ref: '#/components/schemas/NullEnum'
         bedrooms:
           type: integer
-          maximum: 2147483647
-          minimum: 0
           nullable: true
         bathrooms:
           type: integer
-          maximum: 2147483647
-          minimum: 0
           nullable: true
         car_spaces:
           type: integer
-          maximum: 2147483647
-          minimum: 0
           nullable: true
         building_size:
           type: string

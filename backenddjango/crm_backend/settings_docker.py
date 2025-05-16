@@ -53,6 +53,10 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@example.com')
 
+# Email testing mode
+EMAIL_TEST_MODE = os.environ.get('EMAIL_TEST_MODE', '0') == '1'
+EMAIL_TEST_RECIPIENT = os.environ.get('EMAIL_TEST_RECIPIENT', 'test@example.com')
+
 # Logging
 LOGGING = {
     'version': 1,

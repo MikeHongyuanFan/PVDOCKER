@@ -35,4 +35,13 @@ app.conf.beat_schedule = {
         'task': 'reminders.tasks.check_due_reminders',
         'schedule': crontab(minute=0),  # Run hourly at the start of each hour
     },
+    # Email digest tasks
+    'send-daily-digest': {
+        'task': 'crm_backend.tasks.send_daily_digest',
+        'schedule': crontab(hour=8, minute=30),  # Run daily at 8:30 AM
+    },
+    'send-weekly-digest': {
+        'task': 'crm_backend.tasks.send_weekly_digest',
+        'schedule': crontab(day_of_week=1, hour=9, minute=0),  # Run weekly on Monday at 9 AM
+    },
 }

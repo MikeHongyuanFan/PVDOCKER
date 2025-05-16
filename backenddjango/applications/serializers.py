@@ -309,6 +309,27 @@ class FundingCalculationInputSerializer(serializers.Serializer):
     working_fee = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, default=0)
 
 
+class ManualFundingCalculationSerializer(serializers.Serializer):
+    """
+    Serializer for manual funding calculation with application parameters
+    """
+    loan_amount = serializers.DecimalField(max_digits=12, decimal_places=2, required=True)
+    interest_rate = serializers.DecimalField(max_digits=5, decimal_places=2, required=True)
+    security_value = serializers.DecimalField(max_digits=12, decimal_places=2, required=True)
+    
+    # Include all funding calculation input fields
+    establishment_fee_rate = serializers.DecimalField(max_digits=5, decimal_places=2, required=True)
+    capped_interest_months = serializers.IntegerField(min_value=1, default=9)
+    monthly_line_fee_rate = serializers.DecimalField(max_digits=5, decimal_places=2, required=True)
+    brokerage_fee_rate = serializers.DecimalField(max_digits=5, decimal_places=2, required=True)
+    application_fee = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    due_diligence_fee = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    legal_fee_before_gst = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    valuation_fee = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    monthly_account_fee = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    working_fee = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, default=0)
+
+
 class ApplicationCreateSerializer(serializers.ModelSerializer):
     borrowers = BorrowerSerializer(many=True, required=False)
     guarantors = GuarantorSerializer(many=True, required=False)

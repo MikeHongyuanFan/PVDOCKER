@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Notification, NotificationPreference
+from .models import User, Notification, NotificationPreference, EmailLog
 from django.contrib.auth.password_validation import validate_password
 
 
@@ -107,3 +107,32 @@ class LogoutSerializer(serializers.Serializer):
     Serializer for user logout endpoint
     """
     refresh = serializers.CharField(required=True, help_text="Refresh token to blacklist")
+class EmailLogSerializer(serializers.ModelSerializer):
+    """
+    Serializer for EmailLog model
+    """
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    class Meta:
+        model = EmailLog
+        fields = ['id', 'user', 'user_email', 'subject', 'sent_at', 'status', 'status_display', 
+                  'notification', 'email_type']
+        read_only_fields = ['id', 'sent_at', 'user_email', 'status_display']
+
+class EmailPreviewSerializer(serializers.Serializer):
+    """
+    Serializer for email preview endpoint
+    """
+    template = serializers.CharField(required=True, help_text="Template name to preview")
+
+
+class DownloadEmailLogsSerializer(serializers.Serializer):
+    """
+    Serializer for downloading email logs endpoint
+    """
+    ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=True,
+        help_text="List of email log IDs to export"
+    )

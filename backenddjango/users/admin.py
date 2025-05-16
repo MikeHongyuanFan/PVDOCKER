@@ -1,6 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Notification, NotificationPreference
+from django.http import HttpResponse
+from django.urls import path
+from django.utils.html import format_html
+from .models import User, Notification, NotificationPreference, EmailLog
+from crm_backend.tasks import export_email_logs_to_docx
 
 class CustomUserAdmin(UserAdmin):
     list_display = ('email', 'first_name', 'last_name', 'role', 'is_staff', 'is_active', 'date_joined')
@@ -85,5 +89,79 @@ class NotificationPreferenceAdmin(admin.ModelAdmin):
             'fields': ('created_at', 'updated_at')
         }),
     )
+
+@admin.register(EmailLog)
+class EmailLogAdmin(admin.ModelAdmin):
+    list_display = ('subject', 'user_email', 'email_type', 'status', 'sent_at')
+    list_filter = ('status', 'email_type', 'sent_at')
+    search_fields = ('subject', 'user__email', 'message_body')
+    raw_id_fields = ('user', 'notification')
+    readonly_fields = ('sent_at',)
+    fieldsets = (
+        ('Email Information', {
+            'fields': ('subject', 'message_body', 'email_type', 'status')
+        }),
+        ('Related Information', {
+            'fields': ('user', 'notification')
+        }),
+        ('Timestamps', {
+            'fields': ('sent_at',)
+        }),
+    )
+    actions = ['export_to_docx']
+    
+    def user_email(self, obj):
+        return obj.user.email
+    user_email.short_description = 'Recipient'
+    
+    def export_to_docx(self, request, queryset):
+        log_ids = list(queryset.values_list('id', flat=True))
+        if not log_ids:
+            self.message_user(request, "No email logs selected for export.")
+            return
+            
+        # Use the task to generate the DOCX file
+        output = export_email_logs_to_docx(log_ids)
+        
+        # Create response with the DOCX file
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+        response['Content-Disposition'] = 'attachment; filename="email_logs_export.docx"'
+        return response
+    export_to_docx.short_description = "Export selected logs to DOCX"
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'export-docx/',
+                self.admin_site.admin_view(self.export_docx_view),
+                name='users_emaillog_export_docx',
+            ),
+        ]
+        return custom_urls + urls
+    
+    def export_docx_view(self, request):
+        # Get selected IDs from request
+        log_ids = request.GET.getlist('ids')
+        if not log_ids:
+            self.message_user(request, "No email logs selected for export.")
+            return HttpResponse("No logs selected", status=400)
+            
+        # Convert string IDs to integers
+        log_ids = [int(log_id) for log_id in log_ids]
+        
+        # Use the task to generate the DOCX file
+        output = export_email_logs_to_docx(log_ids)
+        
+        # Create response with the DOCX file
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+        response['Content-Disposition'] = 'attachment; filename="email_logs_export.docx"'
+        return response
 
 admin.site.register(User, CustomUserAdmin)
