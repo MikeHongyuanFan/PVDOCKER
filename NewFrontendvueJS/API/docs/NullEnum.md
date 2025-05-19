@@ -1,6 +1,0 @@
-# CrmClientJs.NullEnum
-
-## Enum
-
-
-

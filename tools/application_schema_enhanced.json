@@ -1,0 +1,1332 @@
+{
+  "id": {
+    "type": "IntegerField",
+    "required": false,
+    "read_only": true,
+    "label": "ID"
+  },
+  "reference_number": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Reference number",
+    "max_length": 20
+  },
+  "loan_amount": {
+    "type": "DecimalField",
+    "required": false,
+    "read_only": false,
+    "label": "Loan amount"
+  },
+  "loan_term": {
+    "type": "IntegerField",
+    "required": false,
+    "read_only": false,
+    "help_text": "Loan term in months",
+    "label": "Loan term"
+  },
+  "interest_rate": {
+    "type": "DecimalField",
+    "required": false,
+    "read_only": false,
+    "label": "Interest rate"
+  },
+  "purpose": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Purpose"
+  },
+  "repayment_frequency": {
+    "type": "ChoiceField",
+    "required": false,
+    "read_only": false,
+    "label": "Repayment frequency",
+    "choices": {
+      "weekly": "Weekly",
+      "fortnightly": "Fortnightly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "annually": "Annually"
+    }
+  },
+  "application_type": {
+    "type": "ChoiceField",
+    "required": false,
+    "read_only": false,
+    "label": "Application type",
+    "choices": {
+      "residential": "Residential",
+      "commercial": "Commercial",
+      "construction": "Construction",
+      "refinance": "Refinance",
+      "investment": "Investment",
+      "smsf": "SMSF"
+    }
+  },
+  "product_id": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Product id",
+    "max_length": 50
+  },
+  "estimated_settlement_date": {
+    "type": "DateField",
+    "required": false,
+    "read_only": false,
+    "label": "Estimated settlement date"
+  },
+  "stage": {
+    "type": "ChoiceField",
+    "required": false,
+    "read_only": false,
+    "label": "Stage",
+    "choices": {
+      "inquiry": "Inquiry",
+      "sent_to_lender": "Sent to Lender",
+      "funding_table_issued": "Funding Table Issued",
+      "iloo_issued": "ILOO Issued",
+      "iloo_signed": "ILOO Signed",
+      "commitment_fee_paid": "Commitment Fee Paid",
+      "app_submitted": "App Submitted",
+      "valuation_ordered": "Valuation Ordered",
+      "valuation_received": "Valuation Received",
+      "more_info_required": "More Info Required",
+      "formal_approval": "Formal Approval",
+      "loan_docs_instructed": "Loan Docs Instructed",
+      "loan_docs_issued": "Loan Docs Issued",
+      "loan_docs_signed": "Loan Docs Signed",
+      "settlement_conditions": "Settlement Conditions",
+      "settled": "Settled",
+      "closed": "Closed",
+      "declined": "Declined",
+      "withdrawn": "Withdrawn"
+    }
+  },
+  "branch_id": {
+    "type": "ReadOnlyField",
+    "required": false,
+    "read_only": true,
+    "label": "Branch id"
+  },
+  "bd_id": {
+    "type": "ReadOnlyField",
+    "required": false,
+    "read_only": true,
+    "label": "Bd id"
+  },
+  "borrowers": {
+    "type": "ListSerializer",
+    "required": false,
+    "read_only": false,
+    "label": "Borrowers",
+    "many": true,
+    "children": {
+      "id": {
+        "type": "IntegerField",
+        "required": false,
+        "read_only": true,
+        "label": "ID"
+      },
+      "first_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "First name",
+        "max_length": 100
+      },
+      "last_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Last name",
+        "max_length": 100
+      },
+      "email": {
+        "type": "EmailField",
+        "required": false,
+        "read_only": false,
+        "label": "Email",
+        "max_length": 254
+      },
+      "phone": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Phone",
+        "max_length": 20
+      },
+      "date_of_birth": {
+        "type": "DateField",
+        "required": false,
+        "read_only": false,
+        "label": "Date of birth"
+      },
+      "address": {
+        "type": "SerializerMethodField",
+        "required": false,
+        "read_only": true,
+        "label": "Address"
+      },
+      "employment_info": {
+        "type": "SerializerMethodField",
+        "required": false,
+        "read_only": true,
+        "label": "Employment info"
+      },
+      "tax_id": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "help_text": "Tax File Number or equivalent",
+        "label": "Tax id",
+        "max_length": 50
+      },
+      "marital_status": {
+        "type": "ChoiceField",
+        "required": false,
+        "read_only": false,
+        "label": "Marital status",
+        "choices": {
+          "single": "Single",
+          "married": "Married",
+          "de_facto": "De Facto",
+          "divorced": "Divorced",
+          "widowed": "Widowed"
+        }
+      },
+      "residency_status": {
+        "type": "ChoiceField",
+        "required": false,
+        "read_only": false,
+        "label": "Residency status",
+        "choices": {
+          "citizen": "Citizen",
+          "permanent_resident": "Permanent Resident",
+          "temporary_resident": "Temporary Resident",
+          "foreign_investor": "Foreign Investor"
+        }
+      },
+      "referral_source": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Referral source",
+        "max_length": 100
+      },
+      "tags": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Tags",
+        "max_length": 255
+      }
+    }
+  },
+  "guarantors": {
+    "type": "ListSerializer",
+    "required": false,
+    "read_only": false,
+    "label": "Guarantors",
+    "many": true,
+    "children": {
+      "id": {
+        "type": "IntegerField",
+        "required": false,
+        "read_only": true,
+        "label": "ID"
+      },
+      "guarantor_type": {
+        "type": "ChoiceField",
+        "required": false,
+        "read_only": false,
+        "label": "Guarantor type",
+        "choices": {
+          "individual": "Individual",
+          "company": "Company"
+        }
+      },
+      "title": {
+        "type": "ChoiceField",
+        "required": false,
+        "read_only": false,
+        "label": "Title",
+        "choices": {
+          "mr": "Mr",
+          "mrs": "Mrs",
+          "ms": "Ms",
+          "miss": "Miss",
+          "dr": "Dr",
+          "other": "Other"
+        }
+      },
+      "first_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "First name",
+        "max_length": 100
+      },
+      "last_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Last name",
+        "max_length": 100
+      },
+      "date_of_birth": {
+        "type": "DateField",
+        "required": false,
+        "read_only": false,
+        "label": "Date of birth"
+      },
+      "drivers_licence_no": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Drivers licence no",
+        "max_length": 50
+      },
+      "home_phone": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Home phone",
+        "max_length": 20
+      },
+      "mobile": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Mobile",
+        "max_length": 20
+      },
+      "email": {
+        "type": "EmailField",
+        "required": false,
+        "read_only": false,
+        "label": "Email",
+        "max_length": 254
+      },
+      "address_unit": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address unit",
+        "max_length": 20
+      },
+      "address_street_no": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address street no",
+        "max_length": 20
+      },
+      "address_street_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address street name",
+        "max_length": 100
+      },
+      "address_suburb": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address suburb",
+        "max_length": 100
+      },
+      "address_state": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address state",
+        "max_length": 50
+      },
+      "address_postcode": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address postcode",
+        "max_length": 10
+      },
+      "occupation": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Occupation",
+        "max_length": 100
+      },
+      "employer_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Employer name",
+        "max_length": 255
+      },
+      "employment_type": {
+        "type": "ChoiceField",
+        "required": false,
+        "read_only": false,
+        "label": "Employment type",
+        "choices": {
+          "full_time": "Full Time",
+          "part_time": "Part Time",
+          "casual": "Casual/Temp",
+          "contract": "Contract"
+        }
+      },
+      "annual_income": {
+        "type": "DecimalField",
+        "required": false,
+        "read_only": false,
+        "label": "Annual income"
+      },
+      "company_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Company name",
+        "max_length": 255
+      },
+      "company_abn": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Company abn",
+        "max_length": 20
+      },
+      "company_acn": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Company acn",
+        "max_length": 20
+      },
+      "borrower": {
+        "type": "PrimaryKeyRelatedField",
+        "required": false,
+        "read_only": false,
+        "label": "Borrower",
+        "choices": {
+          "1": "Test Company Pty Ltd",
+          "2": "Test Company Pty Ltd",
+          "4": "Acme Corporation Pty Ltd",
+          "3": "John Smith"
+        }
+      },
+      "application": {
+        "type": "PrimaryKeyRelatedField",
+        "required": false,
+        "read_only": false,
+        "label": "Application",
+        "choices": {
+          "4": "APP-MOCK-2025 - Inquiry",
+          "3": "APP-GCJOS4MW - Inquiry",
+          "2": "APP-7HY44938 - Inquiry",
+          "1": "APP-EWHINWIG - Inquiry"
+        }
+      },
+      "assets": {
+        "type": "ListSerializer",
+        "required": false,
+        "read_only": false,
+        "label": "Assets",
+        "many": true,
+        "children": {
+          "id": {
+            "type": "IntegerField",
+            "required": false,
+            "read_only": true,
+            "label": "ID"
+          },
+          "asset_type": {
+            "type": "ChoiceField",
+            "required": true,
+            "read_only": false,
+            "label": "Asset type",
+            "choices": {
+              "Property": "Property",
+              "Vehicle": "Vehicle",
+              "Savings": "Savings",
+              "Investment Shares": "Investment Shares",
+              "Credit Card": "Credit Card",
+              "Other Creditor": "Other Creditor",
+              "Other": "Other",
+              "To be refinanced": "To be refinanced"
+            }
+          },
+          "description": {
+            "type": "CharField",
+            "required": false,
+            "read_only": false,
+            "label": "Description"
+          },
+          "value": {
+            "type": "DecimalField",
+            "required": false,
+            "read_only": false,
+            "label": "Value"
+          },
+          "amount_owing": {
+            "type": "DecimalField",
+            "required": false,
+            "read_only": false,
+            "label": "Amount owing"
+          },
+          "address": {
+            "type": "CharField",
+            "required": false,
+            "read_only": false,
+            "label": "Address"
+          },
+          "bg_type": {
+            "type": "ChoiceField",
+            "required": false,
+            "read_only": false,
+            "help_text": "Indicates if this asset belongs to BG1 or BG2 (only for guarantor assets)",
+            "label": "Bg type",
+            "choices": {
+              "BG1": "BG1",
+              "BG2": "BG2"
+            }
+          }
+        }
+      },
+      "liabilities": {
+        "type": "ListSerializer",
+        "required": false,
+        "read_only": false,
+        "label": "Liabilities",
+        "many": true,
+        "children": {
+          "id": {
+            "type": "IntegerField",
+            "required": false,
+            "read_only": true,
+            "label": "ID"
+          },
+          "liability_type": {
+            "type": "ChoiceField",
+            "required": true,
+            "read_only": false,
+            "label": "Liability type",
+            "choices": {
+              "mortgage": "Mortgage",
+              "personal_loan": "Personal Loan",
+              "car_loan": "Car Loan",
+              "credit_card": "Credit Card",
+              "tax_debt": "Tax Debt",
+              "other_creditor": "Other Creditor",
+              "other": "Other"
+            }
+          },
+          "description": {
+            "type": "CharField",
+            "required": true,
+            "read_only": false,
+            "label": "Description"
+          },
+          "amount": {
+            "type": "DecimalField",
+            "required": true,
+            "read_only": false,
+            "label": "Amount"
+          },
+          "monthly_payment": {
+            "type": "DecimalField",
+            "required": false,
+            "read_only": false,
+            "label": "Monthly payment"
+          },
+          "bg_type": {
+            "type": "ChoiceField",
+            "required": false,
+            "read_only": false,
+            "help_text": "Indicates if this liability belongs to B/G1 or B/G2",
+            "label": "Bg type",
+            "choices": {
+              "bg1": "B/G1",
+              "bg2": "B/G2"
+            }
+          }
+        }
+      }
+    }
+  },
+  "company_borrowers": {
+    "type": "ListSerializer",
+    "required": false,
+    "read_only": false,
+    "label": "Company borrowers",
+    "many": true,
+    "children": {
+      "id": {
+        "type": "IntegerField",
+        "required": false,
+        "read_only": true,
+        "label": "ID"
+      },
+      "company_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Company name",
+        "max_length": 255
+      },
+      "company_abn": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Company abn",
+        "max_length": 20
+      },
+      "company_acn": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Company acn",
+        "max_length": 20
+      },
+      "industry_type": {
+        "type": "ChoiceField",
+        "required": false,
+        "read_only": false,
+        "label": "Industry type",
+        "choices": {
+          "agriculture": "Agriculture",
+          "mining": "Mining",
+          "manufacturing": "Manufacturing",
+          "construction": "Construction",
+          "retail": "Retail",
+          "transport": "Transport",
+          "hospitality": "Hospitality",
+          "finance": "Finance",
+          "real_estate": "Real Estate",
+          "professional": "Professional Services",
+          "education": "Education",
+          "healthcare": "Healthcare",
+          "arts": "Arts and Recreation",
+          "other": "Other"
+        }
+      },
+      "contact_number": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Contact number",
+        "max_length": 20
+      },
+      "annual_company_income": {
+        "type": "DecimalField",
+        "required": false,
+        "read_only": false,
+        "label": "Annual company income"
+      },
+      "is_trustee": {
+        "type": "BooleanField",
+        "required": false,
+        "read_only": false,
+        "label": "Is trustee"
+      },
+      "is_smsf_trustee": {
+        "type": "BooleanField",
+        "required": false,
+        "read_only": false,
+        "label": "Is smsf trustee"
+      },
+      "trustee_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Trustee name",
+        "max_length": 255
+      },
+      "registered_address_unit": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Registered address unit",
+        "max_length": 20
+      },
+      "registered_address_street_no": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Registered address street no",
+        "max_length": 20
+      },
+      "registered_address_street_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Registered address street name",
+        "max_length": 100
+      },
+      "registered_address_suburb": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Registered address suburb",
+        "max_length": 100
+      },
+      "registered_address_state": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Registered address state",
+        "max_length": 50
+      },
+      "registered_address_postcode": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Registered address postcode",
+        "max_length": 10
+      },
+      "directors": {
+        "type": "ListSerializer",
+        "required": false,
+        "read_only": false,
+        "label": "Directors",
+        "many": true,
+        "children": {
+          "id": {
+            "type": "IntegerField",
+            "required": false,
+            "read_only": true,
+            "label": "ID"
+          },
+          "name": {
+            "type": "CharField",
+            "required": true,
+            "read_only": false,
+            "label": "Name",
+            "max_length": 255
+          },
+          "roles": {
+            "type": "CharField",
+            "required": true,
+            "read_only": false,
+            "help_text": "Comma-separated list of roles",
+            "label": "Roles",
+            "max_length": 255
+          },
+          "director_id": {
+            "type": "CharField",
+            "required": false,
+            "read_only": false,
+            "label": "Director id",
+            "max_length": 50
+          }
+        }
+      },
+      "financial_info": {
+        "type": "FinancialInfoSerializer",
+        "required": false,
+        "read_only": false,
+        "label": "Financial info",
+        "children": {
+          "annual_revenue": {
+            "type": "DecimalField",
+            "required": true,
+            "read_only": false,
+            "label": "Annual revenue"
+          },
+          "net_profit": {
+            "type": "DecimalField",
+            "required": true,
+            "read_only": false,
+            "label": "Net profit"
+          },
+          "assets": {
+            "type": "DecimalField",
+            "required": true,
+            "read_only": false,
+            "label": "Assets"
+          },
+          "liabilities": {
+            "type": "DecimalField",
+            "required": true,
+            "read_only": false,
+            "label": "Liabilities"
+          }
+        }
+      },
+      "assets": {
+        "type": "ListSerializer",
+        "required": false,
+        "read_only": false,
+        "label": "Assets",
+        "many": true,
+        "children": {
+          "id": {
+            "type": "IntegerField",
+            "required": false,
+            "read_only": true,
+            "label": "ID"
+          },
+          "asset_type": {
+            "type": "ChoiceField",
+            "required": true,
+            "read_only": false,
+            "label": "Asset type",
+            "choices": {
+              "Property": "Property",
+              "Vehicle": "Vehicle",
+              "Savings": "Savings",
+              "Investment Shares": "Investment Shares",
+              "Credit Card": "Credit Card",
+              "Other Creditor": "Other Creditor",
+              "Other": "Other",
+              "To be refinanced": "To be refinanced"
+            }
+          },
+          "description": {
+            "type": "CharField",
+            "required": false,
+            "read_only": false,
+            "label": "Description"
+          },
+          "value": {
+            "type": "DecimalField",
+            "required": false,
+            "read_only": false,
+            "label": "Value"
+          },
+          "amount_owing": {
+            "type": "DecimalField",
+            "required": false,
+            "read_only": false,
+            "label": "Amount owing"
+          },
+          "to_be_refinanced": {
+            "type": "BooleanField",
+            "required": false,
+            "read_only": false,
+            "label": "To be refinanced"
+          },
+          "address": {
+            "type": "CharField",
+            "required": false,
+            "read_only": false,
+            "label": "Address"
+          }
+        }
+      },
+      "liabilities": {
+        "type": "ListSerializer",
+        "required": false,
+        "read_only": false,
+        "label": "Liabilities",
+        "many": true,
+        "children": {
+          "id": {
+            "type": "IntegerField",
+            "required": false,
+            "read_only": true,
+            "label": "ID"
+          },
+          "liability_type": {
+            "type": "ChoiceField",
+            "required": true,
+            "read_only": false,
+            "label": "Liability type",
+            "choices": {
+              "mortgage": "Mortgage",
+              "personal_loan": "Personal Loan",
+              "car_loan": "Car Loan",
+              "credit_card": "Credit Card",
+              "tax_debt": "Tax Debt",
+              "other_creditor": "Other Creditor",
+              "other": "Other"
+            }
+          },
+          "description": {
+            "type": "CharField",
+            "required": true,
+            "read_only": false,
+            "label": "Description"
+          },
+          "amount": {
+            "type": "DecimalField",
+            "required": true,
+            "read_only": false,
+            "label": "Amount"
+          },
+          "lender": {
+            "type": "CharField",
+            "required": false,
+            "read_only": false,
+            "label": "Lender",
+            "max_length": 100
+          },
+          "monthly_payment": {
+            "type": "DecimalField",
+            "required": false,
+            "read_only": false,
+            "label": "Monthly payment"
+          },
+          "to_be_refinanced": {
+            "type": "BooleanField",
+            "required": false,
+            "read_only": false,
+            "label": "To be refinanced"
+          },
+          "bg_type": {
+            "type": "ChoiceField",
+            "required": false,
+            "read_only": false,
+            "help_text": "Indicates if this liability belongs to B/G1 or B/G2",
+            "label": "Bg type",
+            "choices": {
+              "bg1": "B/G1",
+              "bg2": "B/G2"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security_properties": {
+    "type": "ListSerializer",
+    "required": false,
+    "read_only": false,
+    "label": "Security properties",
+    "many": true,
+    "children": {
+      "id": {
+        "type": "IntegerField",
+        "required": false,
+        "read_only": true,
+        "label": "ID"
+      },
+      "address_unit": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address unit",
+        "max_length": 20
+      },
+      "address_street_no": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address street no",
+        "max_length": 20
+      },
+      "address_street_name": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address street name",
+        "max_length": 100
+      },
+      "address_suburb": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address suburb",
+        "max_length": 100
+      },
+      "address_state": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address state",
+        "max_length": 50
+      },
+      "address_postcode": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Address postcode",
+        "max_length": 10
+      },
+      "current_mortgagee": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Current mortgagee",
+        "max_length": 255
+      },
+      "first_mortgage": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "First mortgage",
+        "max_length": 255
+      },
+      "second_mortgage": {
+        "type": "CharField",
+        "required": false,
+        "read_only": false,
+        "label": "Second mortgage",
+        "max_length": 255
+      },
+      "current_debt_position": {
+        "type": "DecimalField",
+        "required": false,
+        "read_only": false,
+        "label": "Current debt position"
+      },
+      "property_type": {
+        "type": "ChoiceField",
+        "required": false,
+        "read_only": false,
+        "label": "Property type",
+        "choices": {
+          "residential": "Residential",
+          "commercial": "Commercial",
+          "industrial": "Industrial",
+          "retail": "Retail",
+          "land": "Land",
+          "rural": "Rural",
+          "other": "Other"
+        }
+      },
+      "bedrooms": {
+        "type": "IntegerField",
+        "required": false,
+        "read_only": false,
+        "label": "Bedrooms"
+      },
+      "bathrooms": {
+        "type": "IntegerField",
+        "required": false,
+        "read_only": false,
+        "label": "Bathrooms"
+      },
+      "car_spaces": {
+        "type": "IntegerField",
+        "required": false,
+        "read_only": false,
+        "label": "Car spaces"
+      },
+      "building_size": {
+        "type": "DecimalField",
+        "required": false,
+        "read_only": false,
+        "help_text": "Size in square meters",
+        "label": "Building size"
+      },
+      "land_size": {
+        "type": "DecimalField",
+        "required": false,
+        "read_only": false,
+        "help_text": "Size in square meters",
+        "label": "Land size"
+      },
+      "is_single_story": {
+        "type": "BooleanField",
+        "required": false,
+        "read_only": false,
+        "label": "Is single story"
+      },
+      "has_garage": {
+        "type": "BooleanField",
+        "required": false,
+        "read_only": false,
+        "label": "Has garage"
+      },
+      "has_carport": {
+        "type": "BooleanField",
+        "required": false,
+        "read_only": false,
+        "label": "Has carport"
+      },
+      "has_off_street_parking": {
+        "type": "BooleanField",
+        "required": false,
+        "read_only": false,
+        "label": "Has off street parking"
+      },
+      "occupancy": {
+        "type": "ChoiceField",
+        "required": false,
+        "read_only": false,
+        "label": "Occupancy",
+        "choices": {
+          "owner_occupied": "Owner Occupied",
+          "investment": "Investment Property"
+        }
+      },
+      "estimated_value": {
+        "type": "DecimalField",
+        "required": false,
+        "read_only": false,
+        "label": "Estimated value"
+      },
+      "purchase_price": {
+        "type": "DecimalField",
+        "required": false,
+        "read_only": false,
+        "label": "Purchase price"
+      }
+    }
+  },
+  "loan_requirements": {
+    "type": "ListSerializer",
+    "required": false,
+    "read_only": false,
+    "label": "Loan requirements",
+    "many": true,
+    "children": {
+      "id": {
+        "type": "IntegerField",
+        "required": false,
+        "read_only": true,
+        "label": "ID"
+      },
+      "description": {
+        "type": "CharField",
+        "required": true,
+        "read_only": false,
+        "label": "Description",
+        "max_length": 255
+      },
+      "amount": {
+        "type": "DecimalField",
+        "required": true,
+        "read_only": false,
+        "label": "Amount"
+      }
+    }
+  },
+  "loan_purpose": {
+    "type": "ChoiceField",
+    "required": false,
+    "read_only": false,
+    "label": "Loan purpose",
+    "choices": {
+      "purchase": "Purchase",
+      "refinance": "Refinance",
+      "construction": "Construction",
+      "equity_release": "Equity Release",
+      "debt_consolidation": "Debt Consolidation",
+      "business_expansion": "Business Expansion",
+      "working_capital": "Working Capital",
+      "other": "Other"
+    }
+  },
+  "additional_comments": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Additional comments"
+  },
+  "prior_application": {
+    "type": "BooleanField",
+    "required": false,
+    "read_only": false,
+    "label": "Prior application"
+  },
+  "prior_application_details": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Prior application details"
+  },
+  "exit_strategy": {
+    "type": "ChoiceField",
+    "required": false,
+    "read_only": false,
+    "label": "Exit strategy",
+    "choices": {
+      "sale": "Sale of Property",
+      "refinance": "Refinance",
+      "income": "Income/Cash Flow",
+      "other": "Other"
+    }
+  },
+  "exit_strategy_details": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Exit strategy details"
+  },
+  "valuer_company_name": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Valuer company name",
+    "max_length": 255
+  },
+  "valuer_contact_name": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Valuer contact name",
+    "max_length": 255
+  },
+  "valuer_phone": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Valuer phone",
+    "max_length": 20
+  },
+  "valuer_email": {
+    "type": "EmailField",
+    "required": false,
+    "read_only": false,
+    "label": "Valuer email",
+    "max_length": 254
+  },
+  "qs_company_name": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Qs company name",
+    "max_length": 255
+  },
+  "qs_contact_name": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Qs contact name",
+    "max_length": 255
+  },
+  "qs_phone": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "label": "Qs phone",
+    "max_length": 20
+  },
+  "qs_email": {
+    "type": "EmailField",
+    "required": false,
+    "read_only": false,
+    "label": "Qs email",
+    "max_length": 254
+  },
+  "funding_calculation_input": {
+    "type": "FundingCalculationInputSerializer",
+    "required": false,
+    "read_only": false,
+    "label": "Funding calculation input",
+    "children": {
+      "establishment_fee_rate": {
+        "type": "DecimalField",
+        "required": true,
+        "read_only": false,
+        "label": "Establishment fee rate"
+      },
+      "capped_interest_months": {
+        "type": "IntegerField",
+        "required": false,
+        "read_only": false,
+        "default": 9,
+        "label": "Capped interest months",
+        "min_value": 1
+      },
+      "monthly_line_fee_rate": {
+        "type": "DecimalField",
+        "required": true,
+        "read_only": false,
+        "label": "Monthly line fee rate"
+      },
+      "brokerage_fee_rate": {
+        "type": "DecimalField",
+        "required": true,
+        "read_only": false,
+        "label": "Brokerage fee rate"
+      },
+      "application_fee": {
+        "type": "DecimalField",
+        "required": true,
+        "read_only": false,
+        "label": "Application fee"
+      },
+      "due_diligence_fee": {
+        "type": "DecimalField",
+        "required": true,
+        "read_only": false,
+        "label": "Due diligence fee"
+      },
+      "legal_fee_before_gst": {
+        "type": "DecimalField",
+        "required": true,
+        "read_only": false,
+        "label": "Legal fee before gst"
+      },
+      "valuation_fee": {
+        "type": "DecimalField",
+        "required": true,
+        "read_only": false,
+        "label": "Valuation fee"
+      },
+      "monthly_account_fee": {
+        "type": "DecimalField",
+        "required": true,
+        "read_only": false,
+        "label": "Monthly account fee"
+      },
+      "working_fee": {
+        "type": "DecimalField",
+        "required": false,
+        "read_only": false,
+        "default": 0,
+        "label": "Working fee"
+      }
+    }
+  },
+  "has_pending_litigation": {
+    "type": "BooleanField",
+    "required": false,
+    "read_only": false,
+    "help_text": "Do the Borrower(s) and the Guarantor(s) have any pending or past litigation matters (within the last 2 years)?",
+    "label": "Has pending litigation"
+  },
+  "has_unsatisfied_judgements": {
+    "type": "BooleanField",
+    "required": false,
+    "read_only": false,
+    "help_text": "Are there any unsatisfied judgements against the Borrower(s) and the Guarantor(s)?",
+    "label": "Has unsatisfied judgements"
+  },
+  "has_been_bankrupt": {
+    "type": "BooleanField",
+    "required": false,
+    "read_only": false,
+    "help_text": "Have the Borrower(s) and the Guarantor(s) been bankrupt or insolvent in the past 5 years?",
+    "label": "Has been bankrupt"
+  },
+  "has_been_refused_credit": {
+    "type": "BooleanField",
+    "required": false,
+    "read_only": false,
+    "help_text": "Has the Borrower(s) and the Guarantor(s) been refused credit by a credit provider in the last 1 year?",
+    "label": "Has been refused credit"
+  },
+  "has_outstanding_ato_debt": {
+    "type": "BooleanField",
+    "required": false,
+    "read_only": false,
+    "help_text": "Are there any outstanding debts current or otherwise due to the ATO by the Borrower(s) and the Guarantor(s)?",
+    "label": "Has outstanding ato debt"
+  },
+  "has_outstanding_tax_returns": {
+    "type": "BooleanField",
+    "required": false,
+    "read_only": false,
+    "help_text": "Does the Borrower(s) and the Guarantor(s) have outstanding Tax or BAS returns due to be lodged with the ATO?",
+    "label": "Has outstanding tax returns"
+  },
+  "has_payment_arrangements": {
+    "type": "BooleanField",
+    "required": false,
+    "read_only": false,
+    "help_text": "Has the Borrower(s) and the Guarantor(s) made payment arrangements with a creditor to payout debt that is still current?",
+    "label": "Has payment arrangements"
+  },
+  "solvency_enquiries_details": {
+    "type": "CharField",
+    "required": false,
+    "read_only": false,
+    "help_text": "Additional details for any 'Yes' answers to solvency enquiries",
+    "label": "Solvency enquiries details"
+  }
+}
