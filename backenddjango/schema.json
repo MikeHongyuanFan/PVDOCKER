@@ -1087,6 +1087,32 @@
                 }
             }
         },
+        "/api/applications/applications/enhanced_applications/": {
+            "get": {
+                "operationId": "applications_applications_enhanced_applications_retrieve",
+                "description": "Enhanced list view with additional fields for the application dashboard\nwith advanced filtering capabilities",
+                "tags": [
+                    "applications"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApplicationList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/applications/applications/enhanced_list/": {
             "get": {
                 "operationId": "applications_applications_enhanced_list_retrieve",
@@ -7039,6 +7065,8 @@
                     },
                     "loan_term": {
                         "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": 0,
                         "nullable": true,
                         "description": "Loan term in months"
                     },
@@ -7269,6 +7297,8 @@
                     },
                     "loan_term": {
                         "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": 0,
                         "nullable": true,
                         "description": "Loan term in months"
                     },
@@ -8213,6 +8243,8 @@
                     },
                     "employment_duration": {
                         "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": 0,
                         "nullable": true,
                         "description": "Duration in months"
                     },
@@ -9499,17 +9531,21 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/GuarantorAsset"
-                        }
+                        },
+                        "readOnly": true
                     },
                     "liabilities": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ApplicationLiability"
-                        }
+                        },
+                        "readOnly": true
                     }
                 },
                 "required": [
-                    "id"
+                    "assets",
+                    "id",
+                    "liabilities"
                 ]
             },
             "GuarantorAsset": {
@@ -10019,6 +10055,8 @@
                     },
                     "related_object_id": {
                         "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": -2147483648,
                         "nullable": true
                     },
                     "related_object_type": {
@@ -10911,6 +10949,8 @@
                     },
                     "employment_duration": {
                         "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": 0,
                         "nullable": true,
                         "description": "Duration in months"
                     },
@@ -12167,14 +12207,20 @@
                     },
                     "bedrooms": {
                         "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": 0,
                         "nullable": true
                     },
                     "bathrooms": {
                         "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": 0,
                         "nullable": true
                     },
                     "car_spaces": {
                         "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": 0,
                         "nullable": true
                     },
                     "building_size": {

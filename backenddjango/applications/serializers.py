@@ -132,8 +132,8 @@ class ApplicationLiabilitySerializer(serializers.ModelSerializer):
 
 class GuarantorSerializer(serializers.ModelSerializer):
     from .serializers_asset import GuarantorAssetSerializer
-    assets = GuarantorAssetSerializer(many=True, required=False)
-    liabilities = ApplicationLiabilitySerializer(many=True, required=False)
+    assets = GuarantorAssetSerializer(many=True, required=False, read_only=True)
+    liabilities = ApplicationLiabilitySerializer(many=True, required=False, read_only=True)
     
     class Meta:
         model = Guarantor
@@ -146,6 +146,13 @@ class GuarantorSerializer(serializers.ModelSerializer):
             'company_name', 'company_abn', 'company_acn',
             'borrower', 'application', 'assets', 'liabilities'
         ]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Ensure assets and liabilities are always lists
+        data['assets'] = data.get('assets', [])
+        data['liabilities'] = data.get('liabilities', [])
+        return data
     
     def create(self, validated_data):
         assets_data = validated_data.pop('assets', [])
@@ -607,6 +614,27 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
         from documents.models import Ledger
         ledger_entries = Ledger.objects.filter(application=obj).order_by('-transaction_date')
         return LedgerSerializer(ledger_entries, many=True, context=self.context).data
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        
+        # Ensure all expected fields are present with defaults
+        data['borrowers'] = data.get('borrowers', [])
+        data['guarantors'] = data.get('guarantors', [])
+        data['security_properties'] = data.get('security_properties', [])
+        data['loan_requirements'] = data.get('loan_requirements', [])
+        data['documents'] = data.get('documents', [])
+        data['notes'] = data.get('notes', [])
+        data['fees'] = data.get('fees', [])
+        data['repayments'] = data.get('repayments', [])
+        data['ledger_entries'] = data.get('ledger_entries', [])
+        
+        # Ensure each guarantor has assets and liabilities
+        for guarantor in data['guarantors']:
+            guarantor['assets'] = guarantor.get('assets', [])
+            guarantor['liabilities'] = guarantor.get('liabilities', [])
+            
+        return data
 
 class ApplicationStageUpdateSerializer(serializers.Serializer):
     stage = serializers.ChoiceField(choices=Application.STAGE_CHOICES)
