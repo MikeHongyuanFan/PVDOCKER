@@ -780,6 +780,25 @@ class FundingCalculationResultSerializer(serializers.Serializer):
     funds_available = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
 
+class AssignBDSerializer(serializers.Serializer):
+    """
+    Serializer for assigning a BD to an application
+    """
+    bd_id = serializers.IntegerField(required=True)
+
+    def validate_bd_id(self, value):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        try:
+            user = User.objects.get(id=value)
+            if user.role != 'bd':
+                raise serializers.ValidationError("User is not a Business Developer")
+            return value
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid BD user ID")
+
+
 class LoanExtensionSerializer(serializers.Serializer):
     """
     Serializer for extending a loan with new terms

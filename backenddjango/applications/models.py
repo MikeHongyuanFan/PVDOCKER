@@ -116,6 +116,7 @@ class Application(models.Model):
     broker = models.ForeignKey(Broker, on_delete=models.SET_NULL, null=True, related_name='broker_applications')
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, related_name='branch_applications')
     bd = models.ForeignKey(BDM, on_delete=models.SET_NULL, null=True, related_name='bdm_applications')
+    assigned_bd = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_applications')
     borrowers = models.ManyToManyField('borrowers.Borrower', related_name='borrower_applications')
     guarantors = models.ManyToManyField('borrowers.Guarantor', related_name='guaranteed_applications', blank=True)
     

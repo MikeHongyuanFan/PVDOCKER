@@ -43,14 +43,16 @@ class UserCreateSerializer(serializers.ModelSerializer):
     """
     password = serializers.CharField(write_only=True)
     username = serializers.CharField(required=False)
+    branch_id = serializers.IntegerField(required=False, write_only=True)
     
     class Meta:
         model = User
-        fields = ['id', 'email', 'password', 'first_name', 'last_name', 'role', 'phone', 'username']
+        fields = ['id', 'email', 'password', 'first_name', 'last_name', 'role', 'phone', 'username', 'branch_id']
         read_only_fields = ['id']
     
     def create(self, validated_data):
         password = validated_data.pop('password')
+        branch_id = validated_data.pop('branch_id', None)
         
         # Set username to email if not provided
         if 'username' not in validated_data or not validated_data['username']:
@@ -62,6 +64,34 @@ class UserCreateSerializer(serializers.ModelSerializer):
         
         # Create default notification preferences for the user
         NotificationPreference.objects.create(user=user)
+        
+        # If user role is BD, create BDM profile
+        if user.role == 'bd':
+            from brokers.models import BDM, Branch
+            
+            try:
+                branch = None
+                if branch_id:
+                    branch = Branch.objects.get(id=branch_id)
+                
+                # Create BDM profile
+                BDM.objects.create(
+                    user=user,
+                    name=f"{user.first_name} {user.last_name}".strip() or user.email,
+                    email=user.email,
+                    phone=user.phone,
+                    branch=branch,
+                    created_by=self.context.get('request').user if self.context.get('request') else None
+                )
+            except Branch.DoesNotExist:
+                # If branch doesn't exist, still create BDM but without branch
+                BDM.objects.create(
+                    user=user,
+                    name=f"{user.first_name} {user.last_name}".strip() or user.email,
+                    email=user.email,
+                    phone=user.phone,
+                    created_by=self.context.get('request').user if self.context.get('request') else None
+                )
         
         return user
 

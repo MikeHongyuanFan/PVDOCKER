@@ -29,6 +29,9 @@ class RepaymentComplianceReportView(GenericAPIView):
         end_date = request.query_params.get('end_date', None)
         application_id = request.query_params.get('application_id', None)
         
+        # Import Repayment from documents.models (not applications.models)
+        from documents.models import Repayment
+        
         # Base queryset
         repayments = Repayment.objects.all()
         
@@ -40,17 +43,32 @@ class RepaymentComplianceReportView(GenericAPIView):
         if application_id:
             repayments = repayments.filter(application_id=application_id)
         
-        # Calculate compliance metrics
+        # Calculate compliance metrics with fixed logic for the actual model structure
         total_repayments = repayments.count()
-        paid_on_time = repayments.filter(status='paid', paid_date__lte=F('due_date')).count()
-        paid_late = repayments.filter(status='paid', paid_date__gt=F('due_date')).count()
-        missed = repayments.filter(status='missed').count()
+        
+        # Repayment model doesn't have a status field, it uses paid_date to determine status
+        # Paid on time: has paid_date and paid_date <= due_date
+        paid_on_time = repayments.filter(
+            Q(paid_date__isnull=False) & Q(paid_date__lte=F('due_date'))
+        ).count()
+        
+        # Paid late: has paid_date and paid_date > due_date
+        paid_late = repayments.filter(
+            Q(paid_date__isnull=False) & Q(paid_date__gt=F('due_date'))
+        ).count()
+        
+        # Missed: due_date is in the past and no paid_date
+        missed = repayments.filter(
+            Q(due_date__lt=timezone.now().date()) & Q(paid_date__isnull=True)
+        ).count()
         
         # Calculate compliance rate
         compliance_rate = (paid_on_time / total_repayments * 100) if total_repayments > 0 else 0
         
-        # Calculate average days late for late payments
-        late_payments = repayments.filter(status='paid', paid_date__gt=F('due_date'))
+        # Calculate average days late for late payments with fixed logic
+        late_payments = repayments.filter(
+            Q(paid_date__isnull=False) & Q(paid_date__gt=F('due_date'))
+        )
         days_late = [
             (payment.paid_date - payment.due_date).days 
             for payment in late_payments 
@@ -58,30 +76,49 @@ class RepaymentComplianceReportView(GenericAPIView):
         ]
         average_days_late = sum(days_late) / len(days_late) if days_late else 0
         
-        # Calculate total amounts
+        # Calculate total amounts with fixed logic
+        # All repayments have an amount field
         total_amount_due = repayments.aggregate(total=Sum('amount'))['total'] or 0
-        total_amount_paid = repayments.filter(status='paid').aggregate(total=Sum('payment_amount'))['total'] or 0
+        
+        # Paid repayments have the same amount (no separate payment_amount field)
+        total_amount_paid = repayments.filter(
+            paid_date__isnull=False
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
         payment_rate = (total_amount_paid / total_amount_due * 100) if total_amount_due > 0 else 0
         
-        # Monthly breakdown
+        # Monthly breakdown with fixed logic
         monthly_data = repayments.annotate(
             month=TruncMonth('due_date')
         ).values('month').annotate(
             total=Count('id'),
             paid_on_time=Count(Case(
-                When(status='paid', paid_date__lte=F('due_date'), then=1),
+                When(
+                    Q(paid_date__isnull=False) & Q(paid_date__lte=F('due_date')), 
+                    then=1
+                ),
                 output_field=IntegerField()
             )),
             paid_late=Count(Case(
-                When(status='paid', paid_date__gt=F('due_date'), then=1),
+                When(
+                    Q(paid_date__isnull=False) & Q(paid_date__gt=F('due_date')), 
+                    then=1
+                ),
                 output_field=IntegerField()
             )),
             missed=Count(Case(
-                When(status='missed', then=1),
+                When(
+                    Q(due_date__lt=timezone.now().date()) & Q(paid_date__isnull=True), 
+                    then=1
+                ),
                 output_field=IntegerField()
             )),
             amount_due=Sum('amount'),
-            amount_paid=Sum('payment_amount')
+            amount_paid=Sum(Case(
+                When(paid_date__isnull=False, then=F('amount')),
+                default=0,
+                output_field=DecimalField()
+            ))
         ).order_by('month')
         
         monthly_breakdown = []
@@ -115,7 +152,7 @@ class RepaymentComplianceReportView(GenericAPIView):
             'total_amount_due': total_amount_due,
             'total_amount_paid': total_amount_paid,
             'payment_rate': round(payment_rate, 2),
-            'monthly_breakdown': monthly_breakdown
+            'monthly_breakdown': monthly_breakdown or []  # Ensure empty list instead of None
         }
         
         serializer = RepaymentComplianceReportSerializer(report_data)

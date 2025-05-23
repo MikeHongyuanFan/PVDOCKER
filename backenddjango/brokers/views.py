@@ -197,3 +197,64 @@ class BDMViewSet(viewsets.ModelViewSet):
         applications = bdm.applications.all().order_by('-created_at')
         serializer = ApplicationListSerializer(applications, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def claim_application(self, request):
+        """
+        Allow a BD to claim an unassigned application
+        """
+        # Ensure user is a BD
+        if request.user.role != 'bd':
+            return Response(
+                {"error": "Only Business Developers can claim applications"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Validate input
+        application_id = request.data.get('application_id')
+        if not application_id:
+            return Response(
+                {"error": "application_id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get the application
+        from applications.models import Application
+        try:
+            application = Application.objects.get(id=application_id)
+        except Application.DoesNotExist:
+            return Response(
+                {"error": "Application not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check if application is already assigned
+        if application.assigned_bd:
+            return Response(
+                {"error": "Application is already assigned to a BD"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Assign the application to the BD
+        application.assigned_bd = request.user
+        application.save()
+        
+        # Create notification for the BD
+        from users.models import Notification
+        Notification.objects.create(
+            user=request.user,
+            title=f"Application Claimed: {application.reference_number}",
+            message=f"You have successfully claimed application {application.reference_number}",
+            notification_type="application_status",
+            related_object_id=application.id
+        )
+        
+        # Create a note about the claim
+        from documents.models import Note
+        Note.objects.create(
+            application=application,
+            content=f"Application claimed by BD: {request.user.get_full_name() or request.user.email}",
+            created_by=request.user
+        )
+        
+        return Response({"message": "Application claimed successfully"}, status=status.HTTP_200_OK)
