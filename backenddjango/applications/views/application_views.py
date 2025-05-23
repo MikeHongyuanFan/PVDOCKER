@@ -308,7 +308,134 @@ class ApplicationViewSet(viewsets.ModelViewSet):
                 }
             }
         })
-    @action(detail=False, methods=['post'])
+    @action(detail=True, methods=['post', 'put', 'delete'])
+    def assign_bd(self, request, pk=None):
+        """
+        Manage BD assignment for an application
+        
+        Methods:
+        - POST: Assign a BD to an application that doesn't have one
+        - PUT: Update/reassign the BD for an application
+        - DELETE: Remove the BD assignment from an application
+        """
+        application = self.get_object()
+        
+        # DELETE method - Remove BD assignment
+        if request.method == 'DELETE':
+            if not application.assigned_bd:
+                return Response(
+                    {"error": "Application does not have a BD assigned"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Store the previous BD for the note
+            previous_bd = application.assigned_bd
+            
+            # Remove the BD assignment
+            application.assigned_bd = None
+            application.save()
+            
+            # Create a note about the unassignment
+            from documents.models import Note
+            Note.objects.create(
+                application=application,
+                content=f"BD assignment removed: {previous_bd.get_full_name() or previous_bd.email}",
+                created_by=request.user
+            )
+            
+            return Response({"message": "BD assignment removed successfully"}, status=status.HTTP_200_OK)
+        
+        # For both POST and PUT methods, we need to validate the BD ID
+        from ..serializers import AssignBDSerializer
+        serializer = AssignBDSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            
+            try:
+                bd_user = User.objects.get(id=serializer.validated_data['bd_id'])
+                
+                # POST method - New assignment
+                if request.method == 'POST':
+                    if application.assigned_bd:
+                        return Response(
+                            {"error": "Application already has a BD assigned"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    # Assign the BD
+                    application.assigned_bd = bd_user
+                    application.save()
+                    
+                    # Create notification for the assigned BD
+                    from users.models import Notification
+                    Notification.objects.create(
+                        user=bd_user,
+                        title=f"Application Assignment: {application.reference_number}",
+                        message=f"You have been assigned to application {application.reference_number}",
+                        notification_type="application_status",
+                        related_object_id=application.id
+                    )
+                    
+                    # Create a note about the assignment
+                    from documents.models import Note
+                    Note.objects.create(
+                        application=application,
+                        content=f"Application assigned to BD: {bd_user.get_full_name() or bd_user.email}",
+                        created_by=request.user
+                    )
+                    
+                    return Response({"message": "BD assigned successfully"}, status=status.HTTP_200_OK)
+                
+                # PUT method - Update assignment
+                elif request.method == 'PUT':
+                    if not application.assigned_bd:
+                        return Response(
+                            {"error": "Application does not have a BD assigned. Use POST to assign a BD."},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    # If trying to assign the same BD, return success without changes
+                    if application.assigned_bd.id == bd_user.id:
+                        return Response({"message": "BD assignment unchanged"}, status=status.HTTP_200_OK)
+                    
+                    # Store the previous BD for the note
+                    previous_bd = application.assigned_bd
+                    
+                    # Update the BD assignment
+                    application.assigned_bd = bd_user
+                    application.save()
+                    
+                    # Create notification for the new assigned BD
+                    from users.models import Notification
+                    Notification.objects.create(
+                        user=bd_user,
+                        title=f"Application Assignment: {application.reference_number}",
+                        message=f"You have been assigned to application {application.reference_number}",
+                        notification_type="application_status",
+                        related_object_id=application.id
+                    )
+                    
+                    # Create a note about the reassignment
+                    from documents.models import Note
+                    Note.objects.create(
+                        application=application,
+                        content=f"BD reassigned from {previous_bd.get_full_name() or previous_bd.email} to {bd_user.get_full_name() or bd_user.email}",
+                        created_by=request.user
+                    )
+                    
+                    return Response({"message": "BD reassigned successfully"}, status=status.HTTP_200_OK)
+                
+            except User.DoesNotExist:
+                return Response(
+                    {"error": "Invalid BD user ID"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'])
     def validate_schema(self, request):
         # This is a placeholder for schema validation
         # In a real implementation, you would validate the request data against a schema
