@@ -2,18 +2,12 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-h7f3#$%^&*()_+asdfghjkl;qwertyuiop')
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', '0') == '1'
+ALLOWED_HOSTS = ['*']
 
-ALLOWED_HOSTS = ['*']  # For development only, restrict in production
-
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -21,17 +15,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     # Third-party apps
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
-    # 'drf_yasg',  # Removed to avoid conflicts
+    'drf_yasg',
     'drf_spectacular',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
-    
-    # Local apps
+
+    # Project apps
     'users',
     'applications',
     'borrowers',
@@ -40,15 +33,15 @@ INSTALLED_APPS = [
     'reports',
     'products',
     'reminders',
-    
+
     # Channels
     'channels',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # CORS middleware
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # For serving static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,10 +70,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'crm_backend.wsgi.application'
 
-# Database
-# Check if DATABASE_URL is set (for Docker/production environment)
 if os.environ.get('DATABASE_URL'):
-    # Use PostgreSQL in Docker/production
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -92,7 +82,6 @@ if os.environ.get('DATABASE_URL'):
         }
     }
 else:
-    # Use SQLite for local development without Docker
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -100,66 +89,44 @@ else:
         }
     }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Custom user model
 AUTH_USER_MODEL = 'users.User'
-
-# Channels settings
 ASGI_APPLICATION = 'crm_backend.asgi.application'
 
-# Check if REDIS_HOST is set (for Docker/production environment)
 if os.environ.get('REDIS_HOST'):
-    # Use Redis channel layer for production
     CHANNEL_LAYERS = {
         'default': {
             'BACKEND': 'channels_redis.core.RedisChannelLayer',
             'CONFIG': {
-                'hosts': [(os.environ.get('REDIS_HOST', 'redis'), 
-                          int(os.environ.get('REDIS_PORT', 6379)))],
+                'hosts': [(os.environ.get('REDIS_HOST', 'redis'), int(os.environ.get('REDIS_PORT', 6379)))],
             },
         },
     }
 else:
-    # Use in-memory channel layer for development
     CHANNEL_LAYERS = {
         'default': {
             'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+        },
+    }
 
-# REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -169,13 +136,14 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# Simple JWT settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -184,7 +152,6 @@ SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN': False,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
-    'VERIFYING_KEY': None,
     'AUTH_HEADER_TYPES': ('Bearer',),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
@@ -195,97 +162,24 @@ SIMPLE_JWT = {
     'BLACKLIST_ENABLED': True,
 }
 
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # For development only, restrict in production
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# DRF Spectacular settings
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'CRM Loan Management API',
-    'DESCRIPTION': 'API for CRM Loan Management System',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'ENUM_NAME_OVERRIDES': {
-        'BgTypeEnum': 'borrowers.models.Asset.BG_TYPE_CHOICES',
-        'EmploymentTypeEnum': 'borrowers.models.Borrower.EMPLOYMENT_TYPE_CHOICES',
-        'GuarantorEmploymentTypeEnum': 'borrowers.models.Guarantor.EMPLOYMENT_TYPE_CHOICES',
-    },
-}
-
-# Celery settings
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
-
-# Logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
-            'formatter': 'verbose',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'users': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'applications': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
-
-# Authentication backends
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-]
-
-# DRF-Spectacular settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'CRM Loan Management System API',
     'DESCRIPTION': 'A comprehensive CRM system for loan applications with fully synchronized frontend and backend development.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    
-    # UI customization
+    'ENUM_NAME_OVERRIDES': {
+        'EmploymentTypeEnum': 'borrowers.models.Borrower.EMPLOYMENT_TYPE_CHOICES',
+        'GuarantorEmploymentTypeEnum': 'borrowers.models.Guarantor.EMPLOYMENT_TYPE_CHOICES',
+        'BgTypeEnum': 'borrowers.models.Asset.BG_TYPE_CHOICES',
+    },
     'SWAGGER_UI_SETTINGS': {
         'deepLinking': True,
         'persistAuthorization': True,
         'displayOperationId': True,
     },
-    
-    # JWT token configuration
     'SECURITY': [{'Bearer': []}],
     'APPEND_COMPONENTS': {
         'securitySchemes': {
@@ -296,12 +190,8 @@ SPECTACULAR_SETTINGS = {
             }
         }
     },
-    
-    # Schema customization
     'COMPONENT_SPLIT_REQUEST': True,
     'COMPONENT_NO_READ_ONLY_REQUIRED': False,
-    
-    # Tags configuration for API grouping
     'DEFAULT_GENERATOR_CLASS': 'drf_spectacular.generators.SchemaGenerator',
     'SCHEMA_PATH_PREFIX': r'/api/',
     'TAGS': [
@@ -315,22 +205,43 @@ SPECTACULAR_SETTINGS = {
         {'name': 'reports', 'description': 'Reporting operations'},
         {'name': 'reminders', 'description': 'Reminder operations'},
     ],
+    'SERVERS': [{'url': '/', 'description': 'Default public server'}],
 }
 
-# DRF Spectacular settings
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'CRM Loan Management API',
-    'DESCRIPTION': 'API for CRM Loan Management System',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'ENUM_NAME_OVERRIDES': {
-        'EmploymentTypeEnum': 'borrowers.models.Borrower.EMPLOYMENT_TYPE_CHOICES',
-        'GuarantorEmploymentTypeEnum': 'borrowers.models.Guarantor.EMPLOYMENT_TYPE_CHOICES',
-        'BgTypeEnum': 'borrowers.models.Asset.BG_TYPE_CHOICES',
-    }
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {'format': '{levelname} {asctime} {module} {message}', 'style': '{'},
+        'simple': {'format': '{levelname} {message}', 'style': '{'},
+    },
+    'handlers': {
+        'console': {'level': 'DEBUG', 'class': 'logging.StreamHandler', 'formatter': 'verbose'},
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {'handlers': ['console', 'file'], 'level': 'INFO', 'propagate': True},
+        'users': {'handlers': ['console', 'file'], 'level': 'DEBUG', 'propagate': True},
+        'applications': {'handlers': ['console', 'file'], 'level': 'DEBUG', 'propagate': True},
+    },
 }
 
-# Login URL settings
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 LOGIN_URL = '/api/users/auth/login/'
 LOGIN_REDIRECT_URL = '/swagger/'
 LOGOUT_REDIRECT_URL = '/swagger/'

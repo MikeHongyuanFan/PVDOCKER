@@ -1,10 +1,12 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Borrower, Guarantor, Asset, Liability
 from applications.serializers_asset import CompanyAssetSerializer, GuarantorAssetSerializer
 from rest_framework.permissions import IsAuthenticated
 from .serializers import GuarantorSerializer, BorrowerListSerializer, BorrowerDetailSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
 
 class BorrowerViewSet(viewsets.ModelViewSet):
     """
@@ -12,6 +14,18 @@ class BorrowerViewSet(viewsets.ModelViewSet):
     """
     queryset = Borrower.objects.all()
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['first_name', 'last_name', 'email', 'company_name']
+    filterset_fields = {
+        'first_name': ['exact', 'icontains'],
+        'last_name': ['exact', 'icontains'],
+        'email': ['exact', 'icontains'],
+        'is_company': ['exact'],
+        'company_name': ['exact', 'icontains'],
+        'created_at': ['gte', 'lte'],
+    }
+    ordering_fields = ['first_name', 'last_name', 'email', 'created_at', 'company_name']
+    ordering = ['-created_at']
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -71,3 +85,17 @@ class GuarantorViewSet(viewsets.ModelViewSet):
     queryset = Guarantor.objects.all()
     serializer_class = GuarantorSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['first_name', 'last_name', 'email', 'company_name']
+    filterset_fields = {
+        'first_name': ['exact', 'icontains'],
+        'last_name': ['exact', 'icontains'],
+        'email': ['exact', 'icontains'],
+        'guarantor_type': ['exact'],
+        'company_name': ['exact', 'icontains'],
+        'created_at': ['gte', 'lte'],
+        'borrower': ['exact'],
+        'application': ['exact'],
+    }
+    ordering_fields = ['first_name', 'last_name', 'email', 'created_at', 'company_name']
+    ordering = ['-created_at']
