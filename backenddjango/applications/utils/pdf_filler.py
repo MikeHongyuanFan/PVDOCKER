@@ -365,7 +365,7 @@ CHECKBOX_MAP = {
     
     # SECTION 6: PROPOSED SECURITY DETAILS - PROPERTY 2
     "security2_valuation_current": "Check Box241", # Valuation → Est. Current Value (tick)
-    "security2_valuation_purchase": "Check Box242", # Valuation → Purchase Price (tick)
+    "security2_valuation_purchase": "Check Box243", # Valuation → Purchase Price (tick)
     
     # Property Type
     "security2_residential": "Check Box245",      # Residential
@@ -449,7 +449,7 @@ def fill_pdf_form(application: Application, output_path: str) -> List[str]:
         settings.BASE_DIR, 
         "applications", 
         "ApplicationTemplate", 
-        "Eternity Capital - Application Form.pdf"
+        "Eternity Capital - Application Form (1).pdf"
     )
     
     if not os.path.exists(template_path):

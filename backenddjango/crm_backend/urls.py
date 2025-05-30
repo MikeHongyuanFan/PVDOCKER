@@ -15,7 +15,7 @@ urlpatterns = [
     path('api/documents/', include('documents.urls')),
     path('api/products/', include('products.urls')),
     path('api/reports/', include('reports.urls')),
-    
+    path('api/reminders/', include('reminders.urls')),
     # API documentation with drf-spectacular
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

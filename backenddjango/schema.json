@@ -6599,6 +6599,323 @@
                 }
             }
         },
+        "/api/reminders/": {
+            "get": {
+                "operationId": "reminders_list",
+                "description": "API endpoint for managing reminders",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "is_sent",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "recipient_type",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "bdm",
+                                "broker",
+                                "client",
+                                "custom"
+                            ]
+                        },
+                        "description": "* `client` - Client\n* `bdm` - Business Development Manager\n* `broker` - Broker\n* `custom` - Custom Email"
+                    },
+                    {
+                        "in": "query",
+                        "name": "related_application",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "related_borrower",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "A search term.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "reminders"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedReminderList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "reminders_create",
+                "description": "API endpoint for managing reminders",
+                "tags": [
+                    "reminders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReminderRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReminderRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReminderRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Reminder"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/reminders/{id}/": {
+            "get": {
+                "operationId": "reminders_retrieve",
+                "description": "API endpoint for managing reminders",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this reminder.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "reminders"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Reminder"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "reminders_update",
+                "description": "API endpoint for managing reminders",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this reminder.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "reminders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReminderRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReminderRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReminderRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Reminder"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "reminders_partial_update",
+                "description": "API endpoint for managing reminders",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this reminder.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "reminders"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedReminderRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedReminderRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedReminderRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Reminder"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "reminders_destroy",
+                "description": "API endpoint for managing reminders",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this reminder.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "reminders"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
         "/api/reports/application-status/": {
             "get": {
                 "operationId": "reports_application_status_retrieve",
@@ -13173,6 +13490,33 @@
                     }
                 }
             },
+            "PaginatedReminderList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Reminder"
+                        }
+                    }
+                }
+            },
             "PaginatedRepaymentList": {
                 "type": "object",
                 "properties": {
@@ -14050,6 +14394,50 @@
                     }
                 }
             },
+            "PatchedReminderRequest": {
+                "type": "object",
+                "description": "Serializer for reminders",
+                "properties": {
+                    "recipient_type": {
+                        "$ref": "#/components/schemas/RecipientTypeEnum"
+                    },
+                    "recipient_email": {
+                        "type": "string",
+                        "format": "email",
+                        "minLength": 1,
+                        "maxLength": 254
+                    },
+                    "send_datetime": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email_body": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "subject": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255
+                    },
+                    "send_as_user": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "reply_to_user": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "related_application": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "related_borrower": {
+                        "type": "integer",
+                        "nullable": true
+                    }
+                }
+            },
             "PatchedRepaymentRequest": {
                 "type": "object",
                 "description": "Serializer for repayments",
@@ -14200,6 +14588,170 @@
                 ],
                 "type": "string",
                 "description": "* `residential` - Residential\n* `commercial` - Commercial\n* `industrial` - Industrial\n* `retail` - Retail\n* `land` - Land\n* `rural` - Rural\n* `other` - Other"
+            },
+            "RecipientTypeEnum": {
+                "enum": [
+                    "client",
+                    "bdm",
+                    "broker",
+                    "custom"
+                ],
+                "type": "string",
+                "description": "* `client` - Client\n* `bdm` - Business Development Manager\n* `broker` - Broker\n* `custom` - Custom Email"
+            },
+            "Reminder": {
+                "type": "object",
+                "description": "Serializer for reminders",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "recipient_type": {
+                        "$ref": "#/components/schemas/RecipientTypeEnum"
+                    },
+                    "recipient_email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 254
+                    },
+                    "send_datetime": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email_body": {
+                        "type": "string"
+                    },
+                    "subject": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "created_by_name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "send_as_user": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "send_as_user_email": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "reply_to_user": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "reply_to_user_email": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "is_sent": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "sent_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "error_message": {
+                        "type": "string",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "related_application": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "related_borrower": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "created_by",
+                    "created_by_name",
+                    "email_body",
+                    "error_message",
+                    "id",
+                    "is_sent",
+                    "recipient_email",
+                    "recipient_type",
+                    "reply_to_user_email",
+                    "send_as_user_email",
+                    "send_datetime",
+                    "sent_at",
+                    "subject",
+                    "updated_at"
+                ]
+            },
+            "ReminderRequest": {
+                "type": "object",
+                "description": "Serializer for reminders",
+                "properties": {
+                    "recipient_type": {
+                        "$ref": "#/components/schemas/RecipientTypeEnum"
+                    },
+                    "recipient_email": {
+                        "type": "string",
+                        "format": "email",
+                        "minLength": 1,
+                        "maxLength": 254
+                    },
+                    "send_datetime": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email_body": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "subject": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255
+                    },
+                    "send_as_user": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "reply_to_user": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "related_application": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "related_borrower": {
+                        "type": "integer",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "email_body",
+                    "recipient_email",
+                    "recipient_type",
+                    "send_datetime",
+                    "subject"
+                ]
             },
             "Repayment": {
                 "type": "object",
